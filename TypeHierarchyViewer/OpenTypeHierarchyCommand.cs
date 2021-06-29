@@ -154,5 +154,16 @@ namespace TypeHierarchyViewer
 
             window.ViewModel.InitializeTargetType(symbol, workspace);
         }
+
+        public async void ShowToolWindowAsync(INamedTypeSymbol symbol)
+		{
+            var workspace = GetWorkspace();
+
+            var window = TypeHierarchyWindow.GetWindow(Package);
+            var windowFrame = (IVsWindowFrame)window.Frame;
+            ErrorHandler.ThrowOnFailure(windowFrame.Show());
+
+            window.ViewModel.InitializeTargetType(symbol, workspace);
+        }
     }
 }

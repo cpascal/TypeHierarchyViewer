@@ -16,7 +16,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="1" Text="{Binding TargetType, Converter={x:Static converters:TypeNameConverter.Instance}}" />
-        <TreeView Grid.Row="2" ItemsSource="{Binding TypeNodes}" ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <TreeView Name="TypeTree"  Grid.Row="2" ItemsSource="{Binding TypeNodes}" MouseRightButtonDown="RightButtonDown"  ScrollViewer.VerticalScrollBarVisibility="Auto">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                     <StackPanel Orientation="Horizontal">
@@ -28,9 +28,13 @@
             </TreeView.ItemTemplate>
 
             <TreeView.Resources>
+                <ContextMenu x:Key="TypeItemMenu">
+                    <MenuItem Header="Go To Definition" Click="ContextMenu_GotoDefinition"/>
+                    <MenuItem Header="View Type Hierachy" Click="ContextMenu_ViewTypeHierachy"/>
+                </ContextMenu>
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="True" />
-                    <EventSetter Event="MouseDoubleClick" Handler="OpenItemSymbol" />
+                    <EventSetter Event="MouseDoubleClick" Handler="Item_DoubleClick" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsBaseNode}" Value="True">
                             <Setter Property="Background" Value="{DynamicResource {x:Static vsShell:VsBrushes.InfoBackgroundKey}}"/>
