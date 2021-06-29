@@ -1,5 +1,7 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace TypeHierarchyViewer.Views
 {
@@ -14,21 +16,73 @@ namespace TypeHierarchyViewer.Views
         public TypeHierarchyView()
         {
             InitializeComponent();
+            TypeTree.ContextMenu = TypeTree.Resources["TypeItemMenu"] as System.Windows.Controls.ContextMenu;
         }
 
         /// <summary>
         /// 選択した項目の定義を開きます。
         /// </summary>
-        private void OpenItemSymbol(object sender, MouseButtonEventArgs e)
+        private void Item_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = sender as TreeViewItem;
             if (item?.IsSelected ?? false)
             {
                 e.Handled = true;
 
-                var viewModel = (TypeHierarchyViewModel)DataContext;
-                viewModel.OpenSymbol(item.DataContext as TypeNode);
+                GotoDefinition(item.DataContext as TypeNode);
             }
+        }
+
+        private void ContextMenu_GotoDefinition(object sender, RoutedEventArgs e)
+        {
+            if (TypeTree.ContextMenu == null)
+                return;
+            var typeNode = TypeTree.SelectedItem as TypeNode;
+            if (typeNode != null)
+            {
+                e.Handled = true;
+
+                GotoDefinition(typeNode);
+            }
+        }
+
+        private void ContextMenu_ViewTypeHierachy(object sender, RoutedEventArgs e)
+        {
+            if (TypeTree.ContextMenu == null)
+                return;
+            var typeNode = TypeTree.SelectedItem as TypeNode;
+            if (typeNode != null)
+            {
+                e.Handled = true;
+                OpenTypeHierarchyCommand.Instance.ShowToolWindowAsync(typeNode.Source);
+            }
+        }
+
+        private void GotoDefinition(TypeNode typeNode)
+        {
+            if (typeNode == null)
+                return;
+            var viewModel = (TypeHierarchyViewModel)DataContext;
+            viewModel.OpenSymbol(typeNode);
+        }
+
+        private void RightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TreeViewItem treeViewItem = VisualUpwardSearch<TreeViewItem>(e.OriginalSource as DependencyObject) as TreeViewItem;
+
+            if (treeViewItem != null)
+            {
+                treeViewItem.Focus();
+                treeViewItem.IsSelected = true;
+                e.Handled = true;
+            }
+        }
+
+        static DependencyObject VisualUpwardSearch<T>(DependencyObject source)
+        {
+            while (source != null && source.GetType() != typeof(T))
+                source = VisualTreeHelper.GetParent(source);
+            return source;
         }
     }
 }
